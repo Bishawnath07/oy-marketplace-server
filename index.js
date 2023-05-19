@@ -31,8 +31,20 @@ async function run() {
 
     // to get all my toys
     app.get('/myToys', async (req, res) => {
-      const cousor = toyCollection.find()
+      const cousor = toyCollection.find();
       const result = await cousor.toArray();
+      res.send(result)
+    })
+
+    app.get('/toys/:id' , async(req, res) =>{
+      const id = req.params.id;
+      console.log(id)
+      const query = { _id: new ObjectId(id) };
+      const options = {
+        // Include only the `title` and `imdb` fields in the returned document
+        projection: { seller: 1, price: 1, name: 1, photo: 1 },
+      };
+      const result = await toyCollection.findOne(query , options)
       res.send(result)
     })
 
@@ -71,9 +83,25 @@ async function run() {
     app.delete('/myToys/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
+
       const result = await toyCollection.deleteOne(query);
       res.send(result);
     })
+
+    app.put("/myToys/:id", async (req, res) => {
+      const id = req.params.id;
+      const body = req.body;
+      console.log(body);
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          quantity: body.quantity,
+          details: body.details,
+        },
+      };
+      const result = await toyCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
 
 
     // Creating index on two fields
@@ -97,12 +125,6 @@ async function run() {
         .toArray();
       res.send(result);
     });
-
-
-
-
-
-
 
 
 
