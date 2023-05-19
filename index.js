@@ -30,50 +30,81 @@ async function run() {
     const toyCollection = client.db('toyDB').collection('toys');
 
     // to get all my toys
-    app.get('/myToys' , async(req , res) =>{
+    app.get('/myToys', async (req, res) => {
       const cousor = toyCollection.find()
       const result = await cousor.toArray();
       res.send(result)
     })
 
-    app.post('/toys' , async(req , res) =>{
-        const newToy = req.body;
-        const result = await toyCollection.insertOne(newToy)
-        res.send(result);
+    app.post('/toys', async (req, res) => {
+      const newToy = req.body;
+      const result = await toyCollection.insertOne(newToy)
+      res.send(result);
     })
 
 
 
     // to see all toys 
-    app.get("/allToys/:text" , async(req , res) =>{
-        console.log(req.params.text)
-        if(req.params.text == "Horse" || req.params.text == "dinosaur" || req.params.text == 'teddy bear') {
-            const result = await toyCollection.find({category: req.params.text }).toArray();
-            console.log(result)
-            return res.send(result)
-        }
-        const result = await toyCollection.find({}).toArray();
-        res.send(result)
+    app.get("/allToys/:text", async (req, res) => {
+      console.log(req.params.text)
+      if (req.params.text == "Horse" || req.params.text == "dinosaur" || req.params.text == 'teddy bear') {
+        const result = await toyCollection.find({ category: req.params.text }).toArray();
+        console.log(result)
+        return res.send(result)
+      }
+      const result = await toyCollection.find({}).toArray();
+      res.send(result)
     })
 
 
     app.get("/myToys/:email", async (req, res) => {
-        console.log(req.params.id);
-        const toys = await toyCollection
-          .find({
-            email: req.params.email,
-          })
-          .toArray();
-        res.send(toys);
-      });
+      console.log(req.params.id);
+      const toys = await toyCollection
+        .find({
+          email: req.params.email,
+        })
+        .toArray();
+      res.send(toys);
+    });
 
-      // for delete toys method
-      app.delete('/myToys/:id' , async(req , res) =>{
-        const id = req.params.id;
-        const query = {_id: new ObjectId(id)};
-        const result = await toyCollection.deleteOne(query);
-        res.send(result);
-      })
+    // for delete toys method
+    app.delete('/myToys/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await toyCollection.deleteOne(query);
+      res.send(result);
+    })
+
+
+    // Creating index on two fields
+    const indexKeys = { name: 1, category: 1 }; // Replace field1 and field2 with your actual field names
+    const indexOptions = { name: "nameCategory" }; // Replace index_name with the desired index name
+    const result = await toyCollection.createIndex(indexKeys, indexOptions);
+    console.log(result);
+    console.log(
+      "Pinged your deployment. You successfully connected to MongoDB!"
+    );
+
+    app.get("/getToyByText/:text", async (req, res) => {
+      const text = req.params.text;
+      const result = await toyCollection
+        .find({
+          $or: [
+            { name: { $regex: text, $options: "i" } },
+            { category: { $regex: text, $options: "i" } },
+          ],
+        })
+        .toArray();
+      res.send(result);
+    });
+
+
+
+
+
+
+
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
@@ -86,10 +117,10 @@ async function run() {
 run().catch(console.dir);
 
 
-app.get('/', (req , res) =>{
-    res.send('simple toys is runnig')
+app.get('/', (req, res) => {
+  res.send('simple toys is runnig')
 })
 
-app.listen(port , ()=>{
-    console.log(`simple toy is runnnng on port ${port}`)
+app.listen(port, () => {
+  console.log(`simple toy is runnnng on port ${port}`)
 })
