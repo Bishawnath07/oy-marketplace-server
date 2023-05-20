@@ -106,6 +106,7 @@ async function run() {
         $set: {
           quantity: body.quantity,
           details: body.details,
+          price: body.price,
         },
       };
       const result = await toyCollection.updateOne(filter, updateDoc);
