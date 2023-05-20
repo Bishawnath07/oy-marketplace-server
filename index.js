@@ -30,9 +30,19 @@ async function run() {
     const toyCollection = client.db('toyDB').collection('toys');
 
     // to get all my toys
-    app.get('/myToys', async (req, res) => {
+    app.get('/myAllToys', async (req, res) => {
       const cousor = toyCollection.find();
       const result = await cousor.toArray();
+      res.send(result)
+    })
+    app.get('/myAllToys/:id' , async(req , res) =>{
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id)}
+
+      const option = {
+        projection: { name: 1 , price: 1 , category: 1 , quantity: 1, seller: 1 , photo: 1 , email: 1 , rating: 1 , details: 1}
+      }
+      const result = await toyCollection.findOne(query , option)
       res.send(result)
     })
 
@@ -70,7 +80,6 @@ async function run() {
 
 
     app.get("/myToys/:email", async (req, res) => {
-      console.log(req.params.id);
       const toys = await toyCollection
         .find({
           email: req.params.email,
@@ -80,7 +89,7 @@ async function run() {
     });
 
     // for delete toys method
-    app.delete('/myToys/:id', async (req, res) => {
+    app.delete('/myAllToys/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
 
@@ -88,7 +97,7 @@ async function run() {
       res.send(result);
     })
 
-    app.put("/myToys/:id", async (req, res) => {
+    app.put("/myAllToys/:id", async (req, res) => {
       const id = req.params.id;
       const body = req.body;
       console.log(body);
@@ -102,6 +111,7 @@ async function run() {
       const result = await toyCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
+
 
 
     // Creating index on two fields
