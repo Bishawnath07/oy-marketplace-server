@@ -6,12 +6,13 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // middleware
-const corsOptions ={
-  origin:'*',
-  credentials:true,
-  optionSuccessStatus:200,
+const corsConfig = {
+  origin: '*',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE']
   }
-  app.use(cors(corsOptions))
+  app.use(cors(corsConfig))
+  app.options("", cors(corsConfig))
 app.use(express.json());
 
 
@@ -26,16 +27,18 @@ const client = new MongoClient(uri, {
   }
 });
 
+
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    
+    const limit = 8;
 
     const toyCollection = client.db('toyDB').collection('toys');
 
     // to get all my toys
     app.get('/myAllToys', async (req, res) => {
-      const cousor = toyCollection.find();
+      const cousor = toyCollection.find().limit(limit);
       const result = await cousor.toArray();
       res.send(result)
     })
@@ -89,8 +92,10 @@ async function run() {
           email: req.params.email,
         })
         .toArray();
-      res.send(toys);
+        const sorted = toys.sort((a ,b) => a.price - b.price);
+      res.send(sorted);
     });
+
 
     // for delete toys method
     app.delete('/myAllToys/:id', async (req, res) => {
@@ -117,16 +122,6 @@ async function run() {
       res.send(result);
     });
 
-
-
-    // Creating index on two fields
-    const indexKeys = { name: 1, category: 1 }; // Replace field1 and field2 with your actual field names
-    const indexOptions = { name: "nameCategory" }; // Replace index_name with the desired index name
-    const result = await toyCollection.createIndex(indexKeys, indexOptions);
-    console.log(result);
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
 
     app.get("/getToyByText/:text", async (req, res) => {
       const text = req.params.text;
