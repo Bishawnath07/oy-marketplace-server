@@ -32,14 +32,12 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     
-    const limit = 8;
-
+    
     const toyCollection = client.db('toyDB').collection('toys');
-
+    
     // to get all my toys
     app.get('/myAllToys', async (req, res) => {
-      const cousor = toyCollection.find().limit(limit);
-      const result = await cousor.toArray();
+      const result = await toyCollection.find().limit(9).toArray();
       res.send(result)
     })
     app.get('/myAllToys/:id' , async(req , res) =>{
